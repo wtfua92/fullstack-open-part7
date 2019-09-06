@@ -71,7 +71,11 @@ const Authors = (props) => {
       <div>
         <form onSubmit={addYearHandler}>
           <label htmlFor="author-name">Author's name: </label>
-          <input type="text" id="author-name" value={authorName} onChange={(e) => { setAuthorName(e.target.value) }}/>
+          <select id="author-name" value={authorName} onChange={(e) => { setAuthorName(e.target.value) }}>
+            {
+              data.allAuthors.map((a) => (<option key={a.name} value={a.name}>{a.name}</option>))
+            }
+          </select>
           <br/>
           <label htmlFor="author-year">Author's year: </label>
           <input type="number" id="author-year" value={authorYear} onChange={(e) => { setAuthorYear(e.target.value) }}/>
