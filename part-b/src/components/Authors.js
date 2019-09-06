@@ -1,12 +1,51 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
+import { gql } from 'apollo-boost';
+import { useQuery, useMutation } from "@apollo/react-hooks";
+
+export const GET_AUTHORS = gql`
+    query {
+      allAuthors {
+        name
+        born
+        bookCount
+      }
+    }
+`;
+
+export const ADD_YEAR = gql`  
+  mutation addAuthorYear($authorName: String!, $authorYear: Int!) {
+    editAuthor(name: $authorName, setToBorn: $authorYear) {
+      name
+    }
+  }
+`;
 
 const Authors = (props) => {
+  const [authorName, setAuthorName] = useState('');
+  const [authorYear, setAuthorYear] = useState('');
+  const [addAuthorYear] = useMutation(ADD_YEAR);
+
+  const {loading, data} = useQuery(GET_AUTHORS);
+
+  const addYearHandler = async (e) => {
+    e.preventDefault();
+    await addAuthorYear({
+      variables: {
+        authorName,
+        authorYear: +authorYear
+      },
+      refetchQueries: [{ query: GET_AUTHORS }]
+    });
+
+    setAuthorName('');
+    setAuthorYear('');
+  };
+
   if (!props.show) {
     return null
   }
-  const authors = []
 
-  return (
+  return loading ? <div>loading</div> :
     <div>
       <h2>authors</h2>
       <table>
@@ -20,7 +59,7 @@ const Authors = (props) => {
               books
             </th>
           </tr>
-          {authors.map(a =>
+          {data.allAuthors.map(a =>
             <tr key={a.name}>
               <td>{a.name}</td>
               <td>{a.born}</td>
@@ -29,9 +68,18 @@ const Authors = (props) => {
           )}
         </tbody>
       </table>
-
+      <div>
+        <form onSubmit={addYearHandler}>
+          <label htmlFor="author-name">Author's name: </label>
+          <input type="text" id="author-name" value={authorName} onChange={(e) => { setAuthorName(e.target.value) }}/>
+          <br/>
+          <label htmlFor="author-year">Author's year: </label>
+          <input type="number" id="author-year" value={authorYear} onChange={(e) => { setAuthorYear(e.target.value) }}/>
+          <br/>
+          <button type="submit">Add year</button>
+        </form>
+      </div>
     </div>
-  )
-}
+};
 
 export default Authors
