@@ -21,11 +21,11 @@ export const ADD_YEAR = gql`
 `;
 
 const Authors = (props) => {
-  const [authorName, setAuthorName] = useState('');
+  const token = localStorage.getItem('book-app-user-token');
   const [authorYear, setAuthorYear] = useState('');
-  const [addAuthorYear] = useMutation(ADD_YEAR);
-
+  const [authorName, setAuthorName] = useState('');
   const {loading, data} = useQuery(GET_AUTHORS);
+  const [addAuthorYear] = useMutation(ADD_YEAR);
 
   const addYearHandler = async (e) => {
     e.preventDefault();
@@ -68,12 +68,13 @@ const Authors = (props) => {
           )}
         </tbody>
       </table>
-      <div>
+      {token && <div>
         <form onSubmit={addYearHandler}>
           <label htmlFor="author-name">Author's name: </label>
           <select id="author-name" value={authorName} onChange={(e) => { setAuthorName(e.target.value) }}>
+            <option>Select an author</option>
             {
-              data.allAuthors.map((a) => (<option key={a.name} value={a.name}>{a.name}</option>))
+              data.allAuthors.map((a, i) => (<option key={a.name} value={a.name}>{a.name}</option>))
             }
           </select>
           <br/>
@@ -82,7 +83,7 @@ const Authors = (props) => {
           <br/>
           <button type="submit">Add year</button>
         </form>
-      </div>
+      </div>}
     </div>
 };
 

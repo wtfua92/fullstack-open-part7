@@ -1,14 +1,15 @@
 import React, { useState } from 'react'
-import { useMutation } from "@apollo/react-hooks";
+import {useApolloClient, useMutation} from "@apollo/react-hooks";
 import {gql} from 'apollo-boost';
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
 
 const App = () => {
+  const client = useApolloClient();
   const [page, setPage] = useState('authors');
   const [username, setUsername] = useState('');
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(localStorage.getItem('book-app-user-token'));
   const LOGIN = gql`
     mutation userLogin($username: String!, $password: String!) {
         login(username: $username, password: $password) {
@@ -28,15 +29,30 @@ const App = () => {
           }
       });
       setToken(data.login.value);
+      localStorage.setItem('book-app-user-token', data.login.value);
       setUsername('');
+  };
+
+  const logOut = (e) => {
+      e.preventDefault();
+      setToken('');
+      localStorage.removeItem('book-app-user-token');
+      client.resetStore();
   };
 
   return (
     <div>
       <div>
-        <button onClick={() => setPage('authors')}>authors</button>
-        <button onClick={() => setPage('books')}>books</button>
-        <button onClick={() => setPage('add')}>add book</button>
+        <button type="button" onClick={() => setPage('authors')}>authors</button>
+        <button type="button" onClick={() => setPage('books')}>books</button>
+        {
+          token &&
+          <button type="button" onClick={() => setPage('add')}>add book</button>
+        }
+        {
+          token &&
+          <button type="button" onClick={logOut}>logout</button>
+        }
       </div>
         {!token && <div>
             <h2>Login:</h2>
@@ -64,6 +80,6 @@ const App = () => {
 
     </div>
   )
-}
+};
 
-export default App
+export default App;
