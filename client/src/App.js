@@ -4,6 +4,7 @@ import {gql} from 'apollo-boost';
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
+import Recommended from './components/Recommended';
 
 const App = () => {
   const client = useApolloClient();
@@ -45,6 +46,7 @@ const App = () => {
       <div>
         <button type="button" onClick={() => setPage('authors')}>authors</button>
         <button type="button" onClick={() => setPage('books')}>books</button>
+        <button type="button" onClick={() => setPage('recommended')}>recommended</button>
         {
           token &&
           <button type="button" onClick={() => setPage('add')}>add book</button>
@@ -77,6 +79,8 @@ const App = () => {
       <NewBook
         show={page === 'add'}
       />
+
+      <Recommended show={page === 'recommended'} />
 
     </div>
   )

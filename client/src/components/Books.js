@@ -1,38 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {gql} from 'apollo-boost';
-import {useApolloClient, useQuery} from "@apollo/react-hooks";
+import {useApolloClient} from "@apollo/react-hooks";
+// import {ADD_BOOK} from "./NewBook";
 
 export const GET_BOOKS = gql`
-    query getBooks {
-      allBooks {
-        title
-        published
-        genres
-        author {
-          name
+      query booksByGenre($genre: String) {
+        allBooks(genre: $genre) {
+          title
+          published
+          genres
+          author {
+            name
+          }
         }
       }
-    }
-`;
+    `;
 
 const Books = (props) => {
   const client = useApolloClient();
-  const {loading, data} = useQuery(GET_BOOKS);
   const [allBooks, setAllBooks] = useState([]);
+  const [genre, setGenre] = useState(null);
+  const [genres, setGenres] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const getBooks = async () => {
+    const variables = {};
+    if (genre) {
+      variables.genre = genre;
+    }
+
+    const {data} = await client.query({
+      query: GET_BOOKS,
+      variables
+    });
+    setLoading(false);
+    return data.allBooks
+  };
+
+  useEffect(() => {
+    getBooks().then((allBooks) => {
+      setAllBooks(allBooks);
+      if (!genre) {
+        setGenres(Array.from(new Set(allBooks.map(b => b.genres).flat())));
+      }
+    });
+  }, [genre]);
 
   if (!props.show) {
     return null
   }
 
-  if (!loading) {
-    setAllBooks(data.allBooks);
-  }
-
-  const genres = Array.from(new Set(data.allBooks.map(b => b.genres).flat()));
-
-  const filterByGenre = (genre) => {
-
-  };
+  // const filterByGenre = async (genre) => {
+  //
+  //
+  //   const {data} = await client.query({
+  //     query: FILTERED_BOOKS,
+  //     variables: {
+  //       genre
+  //     },
+  //     refetchQueries: [
+  //       {
+  //         query: FILTERED_BOOKS,
+  //         variables: {
+  //           genre
+  //         }
+  //       }
+  //     ]
+  //   });
+  //
+  //   setAllBooks(data.allBooks);
+  // };
 
   return loading ? <div>loading</div> :
     <div>
@@ -48,7 +85,7 @@ const Books = (props) => {
               published
             </th>
           </tr>
-          {data.allBooks.map(a =>
+          {allBooks.map(a =>
             <tr key={a.title}>
               <td>{a.title}</td>
               <td>{a.author.name}</td>
@@ -59,8 +96,9 @@ const Books = (props) => {
       </table>
       <div>
         {
-          genres.length > 0 && genres.map((g) => <button type="button" key={g}>{g}</button>)
+          genres.map((g) => <button type="button" onClick={() => { setGenre(g) }} key={g}>{g}</button>)
         }
+        <button type="button" onClick={() => { setGenre('') }} >all</button>
       </div>
     </div>
 };

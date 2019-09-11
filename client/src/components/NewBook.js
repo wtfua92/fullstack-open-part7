@@ -4,10 +4,15 @@ import {gql} from 'apollo-boost';
 import {GET_AUTHORS} from "./Authors";
 import {GET_BOOKS} from "./Books";
 
-const ADD_BOOK = gql`
+export const ADD_BOOK = gql`
   mutation addNewBook($title: String!, $author: String!, $published: Int!, $genres: [String!]!) {
     addBook(published: $published, title: $title, author: $author, genres: $genres) {
       title
+      published
+      genres
+      author {
+        name
+      }
     }
   }
 `;
@@ -33,9 +38,19 @@ const NewBook = (props) => {
         title, author, published: +published, genres
       },
       refetchQueries: [
+        { query: GET_AUTHORS },
         { query: GET_BOOKS },
-        { query: GET_AUTHORS }
-      ]
+      ],
+      update: (store, response) => {
+        const genres = response.data.addBook.genres;
+        for (const genre of genres) {
+          const dataInStoreAllBooks = store.readQuery({ query: GET_BOOKS, variables: { genre } });
+          dataInStoreAllBooks.allBooks.push(response.data.addBook);
+          store.writeData({
+            data: dataInStoreAllBooks
+          });
+        }
+      }
     });
 
     setTitle('');
