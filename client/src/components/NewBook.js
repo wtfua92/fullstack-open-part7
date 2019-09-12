@@ -40,17 +40,7 @@ const NewBook = (props) => {
       refetchQueries: [
         { query: GET_AUTHORS },
         { query: GET_BOOKS },
-      ],
-      update: (store, response) => {
-        const genres = response.data.addBook.genres;
-        for (const genre of genres) {
-          const dataInStoreAllBooks = store.readQuery({ query: GET_BOOKS, variables: { genre } });
-          dataInStoreAllBooks.allBooks.push(response.data.addBook);
-          store.writeData({
-            data: dataInStoreAllBooks
-          });
-        }
-      }
+      ]
     });
 
     setTitle('');
